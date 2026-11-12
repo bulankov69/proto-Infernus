@@ -1,9 +1,9 @@
 import webbrowser
 
 class Action:
-    def __init__(self, Name, Action, RequestMarkers, ParamMarkers):
-        self.Name = Name
+    def __init__(self, Action, Server, RequestMarkers, ParamMarkers):
         self.Action = Action
+        self.Server = Server
         self.RequestMarkers = RequestMarkers
         self.ParamMarkers = ParamMarkers
         self.Probability = 0
@@ -14,9 +14,6 @@ def open_Web(WebUrl):
 
 def open_App(AppName):
     print(f"Opening {AppName} application")
-
-def get_AppList():
-    return ["Steam", "Firefox", "VS Code"]
 
 def change_Volume(Mode, Amount):
     pass
@@ -52,7 +49,7 @@ def suggest_Probabilities(Sentence, ActionsList):
 
     for Action in ActionsList:
         if Action.Probability != 0:
-            ActionResults.update({Action.Name:int(Action.Probability/(ActionScore/100))})
+            ActionResults.update({Action.Action:int(Action.Probability/(ActionScore/100))})
     return [dict(sorted(ActionResults.items(), key=lambda item: item[1], reverse=True)),
         dict(sorted(ParamResults.items(), key=lambda item: item[1], reverse=True))]
 
@@ -76,20 +73,44 @@ def break_Word(Word):
             TripletsList.append(Triplet)
         return TripletsList
 
+def parse_DocsFile(Path):
+    with open(Path, "r") as f:
+        Content = f.read()
+
+    Content = Content.split("## ")
+
+    ItemServer = (Content[1].split("\n"))[1].split("URL:")[1]
+
+    List = []
+
+    for i in range(2, len(Content)):
+        Lines = Content[i].split("\n")
+        Method = ""
+        RequestMarkers = ""
+        ParamMarkers = ""
+        for Line in Lines:
+            if "METHOD:" in Line: Method = Line.split("METHOD: ")[1]
+            if "REQUEST_MARKERS:" in Line: RequestMarkers = (Line.split("REQUEST_MARKERS:")[1]).split(", ")
+            if "PARAM_MARKERS:" in Line: ParamMarkers = (Line.split("PARAM_MARKERS:")[1]).split(",")
+        List.append(Action(Method, ItemServer, RequestMarkers, ParamMarkers))
+    
+    return List
+
 Actions = []
 
-WebAction = Action("Open link", "link {url}", ["открой", "сайт", "ссылка"], [".com", ".ru", ".org"])
-Actions.append(WebAction)
-
-AppAction = Action("Launch app", "open_App", ["открой", "запусти"], get_AppList())
-Actions.append(AppAction)
-
-VolumeAction = Action("Change volume", "change_Volume {param}", ["увеличь", "прибавь", "уменьши", "убавь"], [""])
-Actions.append(VolumeAction)    
-
+for i in parse_DocsFile("infernus/Tools.md"):
+    Actions.append(i)
+  
 if __name__ == "__main__":
     UserRequest = input("Enter request: ")
-
+    
     ActionProbabilities = suggest_Probabilities(UserRequest, Actions)
     print(ActionProbabilities)
     execute_ByProbability(ActionProbabilities)
+else:
+    for i in parse_DocsFile("infernus/Tools.md"):
+        print("----")
+        print(i.Action)
+        print(i.Server)
+        print(i.RequestMarkers)
+        print(i.ParamMarkers)
