@@ -3,15 +3,10 @@ from fastapi import FastAPI
 import uvicorn
 from pydantic import BaseModel
 
-
 class WebItem(BaseModel):
     url: str
     
 app = FastAPI()
-
-@app.get("/")
-def first_example():
-    return {"message": "Hello, FastAPI!"}
 
 @app.post("/tools/open_link")
 def open_Web(item: WebItem):
@@ -20,11 +15,11 @@ def open_Web(item: WebItem):
     webbrowser.open(item.url)
     return item.url
 
-@app.post("/tools/open_link")
+@app.post("/tools/open_app")
 def open_App(AppName):
     print(f"Opening {AppName} application")
 
-@app.post("/tools/open_link")
+@app.post("/tools/change_volume")
 def change_Volume(Mode, Amount):
     pass
 

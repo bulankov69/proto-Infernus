@@ -35,9 +35,9 @@ def parse_DocsFile(Path):
 
     return List
 
-def break_Word(Word):
+def break_WordToTriplets(Word):
     if len(Word) <= 3:
-        return {Word}
+        return [Word]
     else:
         TripletsList = []
         for step in range(0, len(Word)-2):
@@ -55,7 +55,7 @@ def suggest_Probabilities(Sentence, ActionsList):
     SplitedSentence = Sentence.split()
 
     for Word in SplitedSentence:
-        WordTriplets = break_Word(Word)
+        WordTriplets = break_WordToTriplets(Word)
         ParamProbability = 0
 
         for Triplet in WordTriplets:
@@ -90,7 +90,6 @@ def execute_ByProbability(ActionProbabilities):
     Method = (Action.Action.split(" "))[0]
 
     Endpoint = "http://"+Action.Server+(Action.Action.split(" "))[1]
-    print(Endpoint)
 
     Param = next(iter(ActionProbabilities[1]))
     Body = dict({Action.Body:Param})
